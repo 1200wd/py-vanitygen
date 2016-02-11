@@ -1,4 +1,7 @@
 # py-vanitygen
 Bitcoin Vanity Address Generator in Python
 
-Uses the pybitcointools library. 
+Small module to mine for vanity addresses with Python. 
+
+Uses the pybitcointools library.
+

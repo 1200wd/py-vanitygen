@@ -32,17 +32,18 @@ def main():
     start = timeit.default_timer()
     pubkey_point = ''
 
-    while not search_for.upper() in address.upper():
-        pubkey_point = fast_multiply(G, privkey)
-        pubkey_bin = encode_pubkey(pubkey_point, 'bin')
-        address = pubkey_to_address(pubkey_bin)
+    print "Searching for %s" % search_for
+
+    while not search_for in address:
         privkey += 1
+        pubkey_point = fast_multiply(G, privkey)
+        address = pubkey_to_address(pubkey_point)
         count += 1
         if not count % 1000:
             print "Searched %d in %d seconds" % (count, timeit.default_timer()-start)
 
-    print "Found adress %s" % address
-    print "Private key is %s" % encode_pubkey(pubkey_point, 'hex')
+    print "Found address %s" % address
+    print "Private key HEX %s" % encode_privkey(privkey,'hex')
 
 
 if __name__ == '__main__':
