@@ -19,20 +19,20 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+import os
 from bitcoin import *
 import timeit
 import random
+import multiprocessing
 
 
-def main():
+def address_search(pipeout, search_for='12o'):
     privkey = random.randrange(2**256)
-    search_for = '12oo'
     address = ''
     count = 0
     start = timeit.default_timer()
-    pubkey_point = ''
 
-    print "Searching for %s" % search_for
+    os.write(pipeout, "Searching for %s (pid %s)" % (search_for, os.getpid()))
 
     while not search_for in address:
         privkey += 1
@@ -40,11 +40,29 @@ def main():
         address = pubkey_to_address(pubkey_point)
         count += 1
         if not count % 1000:
-            print "Searched %d in %d seconds" % (count, timeit.default_timer()-start)
+            os.write(pipeout, "Searched %d in %d seconds (pid %d)" % (count, timeit.default_timer()-start, os.getpid()))
 
-    print "Found address %s" % address
-    print "Private key HEX %s" % encode_privkey(privkey,'hex')
+    os.write(pipeout, "Found address %s" % address)
+    os.write(pipeout, "Private key HEX %s" % encode_privkey(privkey,'hex'))
+
+def main():
+    # processors = multiprocessing.cpu_count()
+    # processors = 2
+    # print("You have %d processors so starting %d threads" % (processors, processors))
+    # for i in range(processors):
+
+    pipein, pipeout = os.pipe()
+    pid = os.fork()
+    if pid == 0:
+        os.close(pipein)
+        address_search(pipeout)
+    else:
+        # pipein = os.fdopen(pipein)
+        while True:
+            line = os.read(pipein, 32)
+            print(line)
+
+    print('Main process exiting')
 
 
-if __name__ == '__main__':
-    main()
+main()
