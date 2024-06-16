@@ -20,7 +20,6 @@
 #
 
 import os
-# from bitcoin import *
 from bitcoinlib.keys import HDKey
 import timeit
 import random
@@ -29,18 +28,31 @@ import multiprocessing
 
 witness_type = 'segwit'
 
-def address_search(search_for='bc1q2345'):
+def address_search(search_for='ql200'):
+    global witness_type
     privkey = random.randrange(2**256)
     address = ''
     count = 0
     start = timeit.default_timer()
 
-    print("Searching for %s (pid %s)" % (search_for, os.getpid()))
+    bech32 = "qpzry9x8gf2tvdw0s3jn54khce6mua7l"
+    base58 = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz'
+    is_bech32 = True
+    is_base58 = True
+    for letter in search_for:
+        if letter not in bech32:
+            is_bech32 = False
+        if letter not in base58:
+            is_base58 = False
+    if not (is_bech32 or is_base58):
+        raise ValueError(f"This is not a valid base58 or bech32 search string: {search_for}")
+    if is_base58 and not is_bech32:
+        witness_type = 'p2sh-segwit'
+
+    print(f"Searching for {search_for}, witness_type is {witness_type} (pid {os.getpid()})")
 
     while not search_for in address:
         privkey += 1
-        # pubkey_point = fast_multiply(G, privkey)
-        # address = pubkey_to_address(pubkey_point)
         k = HDKey(witness_type=witness_type)
         address = k.address()
         count += 1
@@ -62,16 +74,6 @@ def main():
         p = multiprocessing.Process(target=address_search)
         p.start()
         ps.append(p)
-        # pipein, pipeout = os.pipe()
-        # pid = os.fork()
-        # if pid == 0:
-        #     os.close(pipein)
-        #     address_search(pipeout)
-        # else:
-        #     pipein = os.fdopen(pipein)
-            # while True:
-            #     line = os.read(pipein, 32)
-            #     print(line)
 
     # print(ps)
     # print('Main process exiting')
