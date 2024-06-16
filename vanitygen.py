@@ -28,7 +28,7 @@ import multiprocessing
 
 witness_type = 'segwit'
 
-def address_search(search_for='ql200'):
+def address_search(search_for='l200wd'):
     global witness_type
     privkey = random.randrange(2**256)
     address = ''
